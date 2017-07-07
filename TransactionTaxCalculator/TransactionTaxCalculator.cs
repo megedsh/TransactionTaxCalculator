@@ -13,36 +13,21 @@ namespace TransactionTaxCalculator
             try
             {
                 ValidateArguments(args);
-                var helper = new CalculateTaxHelper();
-                ResetVariable(helper);
+                var helper = new CalculateTaxHelper(args.Lines, args.GlobalDiscountAmount, args.GlobalDiscountPct, args.TaxMethod);
                 _taxMethod = args.TaxMethod;
-                helper.TransLines = args.Lines;
-                helper.DiscountAmount = args.GlobalDiscountAmount;
-                helper.DiscountPCT = args.GlobalDiscountPct;
-
                 var res = ProcessDocument(helper);
                 res.Success = true;
                 return res;
             }
             catch (Exception ex)
             {
-                return new CalculateTransactionResult() {Success = false, Exception = ex};
+                return new CalculateTransactionResult() { Success = false, Exception = ex };
             }
         }
 
         private CalculateTransactionResult ProcessDocument(CalculateTaxHelper helper)
         {
-            var brutoValues = GetBrutoValues(helper);
-            helper.DocumentTotalSumLinesWithTax = brutoValues.TotalAmountWithTax;
-            helper.DocumentTotalSumLinesWithWithoutTax = brutoValues.TotalAmountWithoutTax;
-
-            var firstCalc = new CalculateTransactionResult()
-            {
-                TotalTransactionItems = brutoValues.TotalItems,
-                LastTransactionLine = brutoValues.LastLine,
-            };
-
-            CalculateResult(helper, firstCalc);
+            CalculateTransactionResult firstCalc = calculateResult(helper);
 
             if (helper.DiscountAmount == 0)
             {
@@ -53,51 +38,43 @@ namespace TransactionTaxCalculator
                 firstCalc.TaxCodeGroups.TaxGroupedByTaxCodeBeforeDiscount = firstCalc.TaxCodeGroups.TaxGroupedByTaxCode;
                 return firstCalc;
             }
-            else // Calculate again but without the discount
-            {
-                var secondCalc = new CalculateTransactionResult()
-                {
-                    TotalTransactionItems = brutoValues.TotalItems,
-                    LastTransactionLine = brutoValues.LastLine,
-                };
+            // Calculate again but without the discount
 
-                ResetVariable(helper);
-
-                helper.DiscountAmount = 0;
-                helper.DiscountPCT = 0;
-                helper.DocumentTotalSumLinesWithTax = brutoValues.TotalAmountWithTax;
-                helper.DocumentTotalSumLinesWithWithoutTax = brutoValues.TotalAmountWithoutTax;
-
-                CalculateResult(helper, secondCalc);
-                firstCalc.TotalTransactionBeforeDiscountWithoutTax = secondCalc.TotalTransactionAfterDiscountWithTax - secondCalc.TotalTax;
-                firstCalc.TotalTaxWithoutDiscount = secondCalc.TotalTax;
-                firstCalc.TaxRateGroups.TaxGroupedByTaxRateBeforeDiscount = secondCalc.TaxRateGroups.TaxGroupedByTaxRate;
-                firstCalc.TaxCodeGroups.TaxGroupedByTaxCodeBeforeDiscount = secondCalc.TaxCodeGroups.TaxGroupedByTaxCode;
-                firstCalc.TotalDiscountWithoutTax = firstCalc.TotalTransactionBeforeDiscountWithoutTax - firstCalc.TotalTransactionAfterDiscountWithoutTax;
-                return firstCalc;
-            }
+            var helper2 = new CalculateTaxHelper(helper.TransLines, 0, 0, helper.TaxMethod);
+            CalculateTransactionResult secondCalc = calculateResult(helper2);
+            firstCalc.TotalTransactionBeforeDiscountWithoutTax = secondCalc.TotalTransactionAfterDiscountWithTax - secondCalc.TotalTax;
+            firstCalc.TotalTaxWithoutDiscount = secondCalc.TotalTax;
+            firstCalc.TaxRateGroups.TaxGroupedByTaxRateBeforeDiscount = secondCalc.TaxRateGroups.TaxGroupedByTaxRate;
+            firstCalc.TaxCodeGroups.TaxGroupedByTaxCodeBeforeDiscount = secondCalc.TaxCodeGroups.TaxGroupedByTaxCode;
+            firstCalc.TotalDiscountWithoutTax = firstCalc.TotalTransactionBeforeDiscountWithoutTax - firstCalc.TotalTransactionAfterDiscountWithoutTax;
+            return firstCalc;
         }
 
-        private void CalculateResult(CalculateTaxHelper helper, CalculateTransactionResult res)
+        private CalculateTransactionResult calculateResult(CalculateTaxHelper helper)
         {
+            CalculateTransactionResult res = new CalculateTransactionResult();
+            res.TotalTransactionItems = helper.BrutoTotals.TotalItems;
+            res.LastTransactionLine = helper.BrutoTotals.LastLine;
+
             CreateTaxGroupTable(helper);
             CalcTaxForEachGroup(helper);
             if (helper.PositiveValuesExist)
             {
-                DistributeRemainders(true, res, helper);
+                distributeRemainders(true, res, helper);
             }
             if (helper.NegativeValuesExist)
             {
-                DistributeRemainders(false, res, helper);
+                distributeRemainders(false, res, helper);
             }
             GroupAndSortTaxes(res);
-            UpdateTransactionSum(res, helper);
+            updateTransactionSum(res, helper);
+            return res;
         }
 
         private void GroupAndSortTaxes(CalculateTransactionResult res)
         {
-            GroupPositiveAndNegativeRatesGroups(res);
-            GroupPositiveAndNegativeCodeGroups(res);
+            groupPositiveAndNegativeRatesGroups(res);
+            groupPositiveAndNegativeCodeGroups(res);
 
             res.TaxRateGroups.TaxGroupedByTaxRate = res.TaxRateGroups.TaxGroupedByTaxRate.OrderBy(x => x.TaxRate).ToList();
             res.TotalPositiveTax = res.TaxRateGroups.PositiveTaxGroupedByTaxRate.Sum(x => x.TotalTax);
@@ -105,27 +82,27 @@ namespace TransactionTaxCalculator
             res.TotalTax = res.TotalPositiveTax - res.TotalNegativeTax;
         }
 
-        private static void GroupPositiveAndNegativeRatesGroups(CalculateTransactionResult res)
+        private static void groupPositiveAndNegativeRatesGroups(CalculateTransactionResult res)
         {
             if (res.TaxRateGroups.NegativeTaxGroupedByTaxRate.Count == 0 && res.TaxRateGroups.PositiveTaxGroupedByTaxRate.Count > 0)
             {
                 foreach (var vat in res.TaxRateGroups.PositiveTaxGroupedByTaxRate)
                 {
-                    res.TaxRateGroups.TaxGroupedByTaxRate.Add(CloneGroup(vat, 1));
+                    res.TaxRateGroups.TaxGroupedByTaxRate.Add(cloneGroup(vat, 1));
                 }
             }
             if (res.TaxRateGroups.PositiveTaxGroupedByTaxRate.Count == 0 && res.TaxRateGroups.NegativeTaxGroupedByTaxRate.Count > 0)
             {
                 foreach (var vat in res.TaxRateGroups.NegativeTaxGroupedByTaxRate)
                 {
-                    res.TaxRateGroups.TaxGroupedByTaxRate.Add(CloneGroup(vat, -1));
+                    res.TaxRateGroups.TaxGroupedByTaxRate.Add(cloneGroup(vat, -1));
                 }
             }
             if (res.TaxRateGroups.PositiveTaxGroupedByTaxRate.Count > 0 && res.TaxRateGroups.NegativeTaxGroupedByTaxRate.Count > 0)
             {
                 foreach (var vat in res.TaxRateGroups.PositiveTaxGroupedByTaxRate)
                 {
-                    res.TaxRateGroups.TaxGroupedByTaxRate.Add(CloneGroup(vat, 1));
+                    res.TaxRateGroups.TaxGroupedByTaxRate.Add(cloneGroup(vat, 1));
                 }
                 foreach (var vat in res.TaxRateGroups.NegativeTaxGroupedByTaxRate)
                 {
@@ -139,33 +116,33 @@ namespace TransactionTaxCalculator
                     }
                     else
                     {
-                        res.TaxRateGroups.TaxGroupedByTaxRate.Add(CloneGroup(vat, -1));
+                        res.TaxRateGroups.TaxGroupedByTaxRate.Add(cloneGroup(vat, -1));
                     }
                 }
             }
         }
 
-        private static void GroupPositiveAndNegativeCodeGroups(CalculateTransactionResult res)
+        private static void groupPositiveAndNegativeCodeGroups(CalculateTransactionResult res)
         {
             if (res.TaxCodeGroups.NegativeTaxGroupedByTaxCode.Count == 0 && res.TaxCodeGroups.PositiveTaxGroupedByTaxCode.Count > 0)
             {
                 foreach (var vat in res.TaxCodeGroups.PositiveTaxGroupedByTaxCode)
                 {
-                    res.TaxCodeGroups.TaxGroupedByTaxCode.Add(CloneGroup(vat, 1));
+                    res.TaxCodeGroups.TaxGroupedByTaxCode.Add(cloneGroup(vat, 1));
                 }
             }
             if (res.TaxCodeGroups.PositiveTaxGroupedByTaxCode.Count == 0 && res.TaxCodeGroups.NegativeTaxGroupedByTaxCode.Count > 0)
             {
                 foreach (var vat in res.TaxCodeGroups.NegativeTaxGroupedByTaxCode)
                 {
-                    res.TaxCodeGroups.TaxGroupedByTaxCode.Add(CloneGroup(vat, -1));
+                    res.TaxCodeGroups.TaxGroupedByTaxCode.Add(cloneGroup(vat, -1));
                 }
             }
             if (res.TaxCodeGroups.PositiveTaxGroupedByTaxCode.Count > 0 && res.TaxCodeGroups.NegativeTaxGroupedByTaxCode.Count > 0)
             {
                 foreach (var vat in res.TaxCodeGroups.PositiveTaxGroupedByTaxCode)
                 {
-                    res.TaxCodeGroups.TaxGroupedByTaxCode.Add(CloneGroup(vat, 1));
+                    res.TaxCodeGroups.TaxGroupedByTaxCode.Add(cloneGroup(vat, 1));
                 }
                 foreach (var vat in res.TaxCodeGroups.NegativeTaxGroupedByTaxCode)
                 {
@@ -179,13 +156,13 @@ namespace TransactionTaxCalculator
                     }
                     else
                     {
-                        res.TaxCodeGroups.TaxGroupedByTaxCode.Add(CloneGroup(vat, -1));
+                        res.TaxCodeGroups.TaxGroupedByTaxCode.Add(cloneGroup(vat, -1));
                     }
                 }
             }
         }
 
-        private static TaxRateGroup CloneGroup(TaxRateGroup vat, int factor)
+        private static TaxRateGroup cloneGroup(TaxRateGroup vat, int factor)
         {
             return new TaxRateGroup()
             {
@@ -196,7 +173,7 @@ namespace TransactionTaxCalculator
             };
         }
 
-        private static TaxCodeGroup CloneGroup(TaxCodeGroup vat, int factor)
+        private static TaxCodeGroup cloneGroup(TaxCodeGroup vat, int factor)
         {
             return new TaxCodeGroup()
             {
@@ -208,17 +185,7 @@ namespace TransactionTaxCalculator
             };
         }
 
-        private void ResetVariable(CalculateTaxHelper helper)
-        {
-            helper.TaxGroupsForCalculations = new List<TaxGroupForCalculations>();
-            helper.DiscountAmount = 0;
-            helper.NegativeValuesExist = false;
-            helper.PositiveValuesExist = false;
-            helper.RemainderSumNegative = 0;
-            helper.RemainderSumPositive = 0;
-        }
-
-        private void UpdateTransactionSum(CalculateTransactionResult res, CalculateTaxHelper helper)
+        private void updateTransactionSum(CalculateTransactionResult res, CalculateTaxHelper helper)
         {
             if (helper.PositiveValuesExist)
             {
@@ -229,8 +196,8 @@ namespace TransactionTaxCalculator
                 res.TotalNegativeIncludingTax = res.TaxRateGroups.NegativeTaxGroupedByTaxRate.Sum(x => x.TotalWithTax);
             }
 
-            res.SumLinesWithTax = helper.DocumentTotalSumLinesWithTax;
-            res.SumLinesWithoutTax = helper.DocumentTotalSumLinesWithWithoutTax;
+            res.SumLinesWithTax = helper.BrutoTotals.TotalAmountWithTax;
+            res.SumLinesWithoutTax = helper.BrutoTotals.TotalAmountWithoutTax;
 
             res.TotalTransactionBeforeDiscountWithTax = res.SumLinesWithTax;
             res.TotalDiscountWithTax = res.SumLinesWithTax - (res.TotalPositiveIncludingTax - res.TotalNegativeIncludingTax);
@@ -240,55 +207,9 @@ namespace TransactionTaxCalculator
             res.TotalTransactionAfterDiscountWithoutTax = res.TaxRateGroups.TaxGroupedByTaxRate.Sum(x => x.TotalWithoutTax);
         }
 
-        private TransactionBrutoTotals GetBrutoValues(CalculateTaxHelper helper)
+        private static decimal GetSaleTaxDue(decimal amount, decimal taxRatePct, TaxMethods taxMetod)
         {
-            TransactionBrutoTotals res = new TransactionBrutoTotals();
-            foreach (var line in helper.TransLines)
-            {
-                var taxDueForLine = GetSaleTaxDue(line.LineTotal, line.TaxRate);
-
-                res.TotalItems += line.Qty;
-                if (_taxMethod == TaxMethods.AddTax)
-                {
-                    res.TotalAmountWithoutTax += line.LineTotal;
-                    res.TotalAmountWithTax += (line.LineTotal + taxDueForLine);
-                }
-                else
-                {
-                    res.TotalAmountWithTax += line.LineTotal;
-                }
-
-                res.TotalLines++;
-                res.LastLine = line.LineID > res.LastLine ? line.LineID : res.LastLine;
-
-                var c = res.TaxGroupsCalculatedFromItems.Find(x => x.TaxRate == line.TaxRate);
-                if (c != null)
-                {
-                    c.TotalTax += taxDueForLine;
-                }
-                else
-                {
-                    res.TaxGroupsCalculatedFromItems.Add(new TaxRateGroup()
-                    {
-                        TaxRate = line.TaxRate,
-                        TotalTax = taxDueForLine
-                    });
-                }
-            }
-
-            if (helper.DiscountAmount == 0 && helper.DiscountPCT != 0)
-            {
-                decimal bruto = _taxMethod == TaxMethods.AddTax ? res.TotalAmountWithoutTax : res.TotalAmountWithTax;
-                helper.DiscountAmount = Math.Round((helper.DiscountPCT / 100) * bruto, 2);
-            }
-
-            return res;
-        }
-
-
-        private decimal GetSaleTaxDue(decimal amount, decimal taxRatePct)
-        {
-            switch (_taxMethod)
+            switch (taxMetod)
             {
                 case TaxMethods.ExtractTax:
                     return Math.Round(amount - amount / (1 + taxRatePct / 100), 2);
@@ -363,15 +284,15 @@ namespace TransactionTaxCalculator
             switch (_taxMethod)
             {
                 case TaxMethods.AddTax:
-                    if (helper.DocumentTotalSumLinesWithWithoutTax != 0)
+                    if (helper.BrutoTotals.TotalAmountWithoutTax != 0)
                     {
-                        return helper.DiscountAmount / helper.DocumentTotalSumLinesWithWithoutTax;
+                        return helper.DiscountAmount / helper.BrutoTotals.TotalAmountWithoutTax;
                     }
                     return 0;
                 default:
-                    if (helper.DocumentTotalSumLinesWithTax != 0)
+                    if (helper.BrutoTotals.TotalAmountWithTax != 0)
                     {
-                        return helper.DiscountAmount / helper.DocumentTotalSumLinesWithTax;
+                        return helper.DiscountAmount / helper.BrutoTotals.TotalAmountWithTax;
                     }
                     return 0;
             }
@@ -382,7 +303,7 @@ namespace TransactionTaxCalculator
             return Math.Truncate(p * 100) / 100;
         }
 
-        private void DistributeRemainders(bool posOrNeg, CalculateTransactionResult res, CalculateTaxHelper helper)
+        private void distributeRemainders(bool posOrNeg, CalculateTransactionResult res, CalculateTaxHelper helper)
         {
             int sign = posOrNeg ? 1 : -1;
             var vatGroups = helper.TaxGroupsForCalculations.Where(x => x.PositiveOrNegative == sign);
@@ -403,16 +324,16 @@ namespace TransactionTaxCalculator
                 group.DiscountAmountForGroupWithRemainder = group.TruncatedDiscountAmountForGroup + group.DistributedRemainder;
                 group.TotalForGroupAfterDiscountAndRemainder = group.TotalForGroupBeforeDiscount - group.DiscountAmountForGroupWithRemainder;
 
-                group.TotalVATAfterDiscount = GetSaleTaxDue(group.TotalForGroupAfterDiscountAndRemainder, group.TaxPct);
-                group.TotalVATBeforeDiscount = GetSaleTaxDue(group.TotalForGroupBeforeDiscount, group.TaxPct);
+                group.TotalVATAfterDiscount = GetSaleTaxDue(group.TotalForGroupAfterDiscountAndRemainder, group.TaxPct, helper.TaxMethod);
+                group.TotalVATBeforeDiscount = GetSaleTaxDue(group.TotalForGroupBeforeDiscount, group.TaxPct, helper.TaxMethod);
 
 
-                AddToTaxRateGroups(posOrNeg, group.TaxPct, group.TotalForGroupAfterDiscountAndRemainder, res);
-                AddToTaxCodeGroups(posOrNeg, group.TaxCode, group.TaxPct, group.TotalForGroupAfterDiscountAndRemainder, res);
+                addToTaxRateGroups(posOrNeg, group.TaxPct, group.TotalForGroupAfterDiscountAndRemainder, res);
+                addToTaxCodeGroups(posOrNeg, group.TaxCode, group.TaxPct, group.TotalForGroupAfterDiscountAndRemainder, res);
             }
         }
 
-        private void AddToTaxRateGroups(bool posOrNeg, decimal taxRate, decimal amount, CalculateTransactionResult res)
+        private void addToTaxRateGroups(bool posOrNeg, decimal taxRate, decimal amount, CalculateTransactionResult res)
         {
             List<TaxRateGroup> groupsList;
             if (posOrNeg)
@@ -424,10 +345,10 @@ namespace TransactionTaxCalculator
                 groupsList = res.TaxRateGroups.NegativeTaxGroupedByTaxRate;
             }
 
-            AddToTaxRateGroupList(taxRate, amount, groupsList);
+            addToTaxRateGroupList(taxRate, amount, groupsList);
         }
 
-        private void AddToTaxRateGroupList(decimal taxRate, decimal amount, List<TaxRateGroup> groupsList)
+        private void addToTaxRateGroupList(decimal taxRate, decimal amount, List<TaxRateGroup> groupsList)
         {
             var c = groupsList.Find(x => x.TaxRate == taxRate);
 
@@ -440,19 +361,18 @@ namespace TransactionTaxCalculator
             if (_taxMethod == TaxMethods.AddTax)
             {
                 c.TotalWithoutTax += amount;
-                c.TotalTax = GetSaleTaxDue(c.TotalWithoutTax, c.TaxRate);
+                c.TotalTax = GetSaleTaxDue(c.TotalWithoutTax, c.TaxRate, _taxMethod);
                 c.TotalWithTax = c.TotalWithoutTax + c.TotalTax;
             }
             else
             {
                 c.TotalWithTax += amount;
-                c.TotalTax = GetSaleTaxDue(c.TotalWithTax, c.TaxRate);
+                c.TotalTax = GetSaleTaxDue(c.TotalWithTax, c.TaxRate, _taxMethod);
                 c.TotalWithoutTax = c.TotalWithTax - c.TotalTax;
             }
         }
 
-
-        private void AddToTaxCodeGroups(bool posOrNeg, string taxCode, decimal taxRate, decimal amount, CalculateTransactionResult res)
+        private void addToTaxCodeGroups(bool posOrNeg, string taxCode, decimal taxRate, decimal amount, CalculateTransactionResult res)
         {
             List<TaxCodeGroup> groupsList;
             if (posOrNeg)
@@ -464,10 +384,10 @@ namespace TransactionTaxCalculator
                 groupsList = res.TaxCodeGroups.NegativeTaxGroupedByTaxCode;
             }
 
-            AddToTaxCodeGroupList(taxCode, taxRate, amount, groupsList);
+            addToTaxCodeGroupList(taxCode, taxRate, amount, groupsList);
         }
 
-        private void AddToTaxCodeGroupList(string taxCode, decimal taxRate, decimal amount, List<TaxCodeGroup> groupsList)
+        private void addToTaxCodeGroupList(string taxCode, decimal taxRate, decimal amount, List<TaxCodeGroup> groupsList)
         {
             var c = groupsList.Find(x => x.TaxCode == taxCode);
 
@@ -480,18 +400,16 @@ namespace TransactionTaxCalculator
             if (_taxMethod == TaxMethods.AddTax)
             {
                 c.TotalWithoutTax += amount;
-                c.TotalTax = GetSaleTaxDue(c.TotalWithoutTax, c.TaxRate);
+                c.TotalTax = GetSaleTaxDue(c.TotalWithoutTax, c.TaxRate, _taxMethod);
                 c.TotalWithTax = c.TotalWithoutTax + c.TotalTax;
             }
             else
             {
                 c.TotalWithTax += amount;
-                c.TotalTax = GetSaleTaxDue(c.TotalWithTax, c.TaxRate);
+                c.TotalTax = GetSaleTaxDue(c.TotalWithTax, c.TaxRate, _taxMethod);
                 c.TotalWithoutTax = c.TotalWithTax - c.TotalTax;
             }
         }
-
-
 
         private short PosOrNeg(decimal value)
         {
@@ -512,9 +430,13 @@ namespace TransactionTaxCalculator
 
             var invalidGroup = args.Lines.
                 GroupBy(line => line.TaxCode).
-                Select(group => new{Code= group.Key, Count = group.Select(line => line.TaxRate).
-                Distinct().Count()}).
-                FirstOrDefault(tc=>tc.Count>1);
+                Select(group => new
+                {
+                    Code = group.Key,
+                    Count = group.Select(line => line.TaxRate).
+                Distinct().Count()
+                }).
+                FirstOrDefault(tc => tc.Count > 1);
 
             if (invalidGroup != null)
             {
@@ -526,16 +448,78 @@ namespace TransactionTaxCalculator
 
         private class CalculateTaxHelper
         {
+            public CalculateTaxHelper(IEnumerable<ITransactionLine> transLines, decimal discountAmount, decimal discountPct, TaxMethods taxMethod)
+            {
+                TransLines = transLines;
+                DiscountAmount = discountAmount;
+                DiscountPCT = discountPct;
+                TaxMethod = taxMethod;
+                BrutoTotals = calculateBruto();
+                setDiscountAmount();
+            }
+
+            private void setDiscountAmount()
+            {
+                if (DiscountAmount == 0 && DiscountPCT != 0)
+                {
+                    decimal bruto = TaxMethod == TaxMethods.AddTax
+                        ? BrutoTotals.TotalAmountWithoutTax
+                        : BrutoTotals.TotalAmountWithTax;
+                    DiscountAmount = Math.Round((DiscountPCT / 100) * bruto, 2);
+                }
+            }
+
+            public TransactionBrutoTotals BrutoTotals { get; private set; }
+            public TaxMethods TaxMethod { get; }
+
+
             public IEnumerable<ITransactionLine> TransLines;
             public List<TaxGroupForCalculations> TaxGroupsForCalculations = new List<TaxGroupForCalculations>();
-            public decimal DocumentTotalSumLinesWithTax;
-            public decimal DocumentTotalSumLinesWithWithoutTax;
+
             public decimal DiscountAmount;
             public decimal DiscountPCT;
             public decimal RemainderSumPositive;
             public decimal RemainderSumNegative;
             public bool PositiveValuesExist;
             public bool NegativeValuesExist;
+
+            private TransactionBrutoTotals calculateBruto()
+            {
+                TransactionBrutoTotals res = new TransactionBrutoTotals();
+                foreach (var line in TransLines)
+                {
+                    var taxDueForLine = GetSaleTaxDue(line.LineTotal, line.TaxRate, TaxMethod);
+
+                    res.TotalItems += line.Qty;
+                    if (TaxMethod == TaxMethods.AddTax)
+                    {
+                        res.TotalAmountWithoutTax += line.LineTotal;
+                        res.TotalAmountWithTax += (line.LineTotal + taxDueForLine);
+                    }
+                    else
+                    {
+                        res.TotalAmountWithTax += line.LineTotal;
+                    }
+
+                    res.TotalLines++;
+                    res.LastLine = line.LineID > res.LastLine ? line.LineID : res.LastLine;
+
+                    var c = res.TaxGroupsCalculatedFromItems.Find(x => x.TaxRate == line.TaxRate);
+                    if (c != null)
+                    {
+                        c.TotalTax += taxDueForLine;
+                    }
+                    else
+                    {
+                        res.TaxGroupsCalculatedFromItems.Add(new TaxRateGroup()
+                        {
+                            TaxRate = line.TaxRate,
+                            TotalTax = taxDueForLine
+                        });
+                    }
+                }
+                return res;
+            }
         }
     }
 
