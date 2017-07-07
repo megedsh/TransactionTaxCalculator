@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionTaxCalculator", "TransactionTaxCalculator\TransactionTaxCalculator.csproj", "{AED709DB-1479-4CC1-BA37-0842DA4BC3C8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{CAFCA2DC-AC5C-4722-8EFC-5594B27002B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionTaxCalculator_Tests", "TransactionTaxCalculator_Tests\TransactionTaxCalculator_Tests.csproj", "{9EB8C05C-4EE8-432E-8152-D49D4D80CBD3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AED709DB-1479-4CC1-BA37-0842DA4BC3C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AED709DB-1479-4CC1-BA37-0842DA4BC3C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AED709DB-1479-4CC1-BA37-0842DA4BC3C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AED709DB-1479-4CC1-BA37-0842DA4BC3C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EB8C05C-4EE8-432E-8152-D49D4D80CBD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EB8C05C-4EE8-432E-8152-D49D4D80CBD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EB8C05C-4EE8-432E-8152-D49D4D80CBD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EB8C05C-4EE8-432E-8152-D49D4D80CBD3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9EB8C05C-4EE8-432E-8152-D49D4D80CBD3} = {CAFCA2DC-AC5C-4722-8EFC-5594B27002B6}
+	EndGlobalSection
+EndGlobal
