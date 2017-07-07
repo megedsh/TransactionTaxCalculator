@@ -1,9 +1,12 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using TransactionTaxCalculator;
 
-
-namespace TransactionTaxCalculator.Tests
+namespace TransactionTaxCalculator_Tests
 {
     [TestClass]
     public class CommonTransactionSumCalculator_Tests
@@ -11,7 +14,7 @@ namespace TransactionTaxCalculator.Tests
         [TestMethod]
         public void SimpleTest1()
         {
-            CommonTransactionSumCalculator c = new CommonTransactionSumCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             args.Lines = new TransactionLine[]
             {
@@ -40,7 +43,7 @@ namespace TransactionTaxCalculator.Tests
             Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode[0].TotalTax, expectedTotalTax);
             Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Count, 1);
             Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate[0].TotalTax, expectedTotalTax);
-            
+
 
             args.TaxMethod = TaxMethods.AddTax;
             var res2 = c.Calculate(args);
@@ -61,7 +64,7 @@ namespace TransactionTaxCalculator.Tests
         [TestMethod]
         public void TwoTaxCodesOneTaxRateTest()
         {
-            CommonTransactionSumCalculator c = new CommonTransactionSumCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             args.Lines = new TransactionLine[]
             {
@@ -99,7 +102,7 @@ namespace TransactionTaxCalculator.Tests
         [TestMethod]
         public void TwoTaxCodesTwoTaxRateTest()
         {
-            CommonTransactionSumCalculator c = new CommonTransactionSumCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             args.Lines = new TransactionLine[]
             {
@@ -137,7 +140,7 @@ namespace TransactionTaxCalculator.Tests
         [TestMethod]
         public void NegativeSimple()
         {
-            CommonTransactionSumCalculator c = new CommonTransactionSumCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             args.Lines = new[]
             {
@@ -192,7 +195,7 @@ namespace TransactionTaxCalculator.Tests
         [TestMethod]
         public void NegativeAndPositive()
         {
-            CommonTransactionSumCalculator c = new CommonTransactionSumCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             args.Lines = new[]
             {
@@ -248,7 +251,7 @@ namespace TransactionTaxCalculator.Tests
         [TestMethod]
         public void Complex1()
         {
-            CommonTransactionSumCalculator c = new CommonTransactionSumCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             args.Lines = new[]
             {
@@ -316,7 +319,7 @@ namespace TransactionTaxCalculator.Tests
             args.TaxMethod = TaxMethods.ExtractTax;
             args.GlobalDiscountAmount = 31.82m;
             var res = c.Calculate(args);
-
+            Assert.IsTrue(res.TaxRateGroups.TaxGroupedByTaxRate.Any());
             Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.FirstOrDefault(x => x.TaxRate == 0).TotalTax, 0);
             Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.FirstOrDefault(x => x.TaxRate == 1).TotalTax, 12.06m);
             Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.FirstOrDefault(x => x.TaxRate == 5).TotalTax, 47.65m);
@@ -327,15 +330,15 @@ namespace TransactionTaxCalculator.Tests
             Assert.AreEqual(res.SumLinesWithTax, 2731.82m);
             Assert.AreEqual(res.TotalTax, 126.43m);
             Assert.AreEqual(res.TotalTransactionAfterDiscountWithTax, 2700);
-            
-            
+
+
 
         }
 
         [TestMethod]
         public void Complex2()
         {
-            CommonTransactionSumCalculator c = new CommonTransactionSumCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             args.Lines = new[]
             {
@@ -350,9 +353,23 @@ namespace TransactionTaxCalculator.Tests
 
             //Check that the discount did not change because of rounding issues - This could happen since the discount is distributed for all tax groups.
             Assert.AreEqual(res.TotalDiscountWithTax, 547m);
-
-
         }
 
+        [TestMethod]
+        public void TestMultipleTaxCodeValidationError()
+        {
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
+            TransactionCalculatorArgs args = new TransactionCalculatorArgs();
+            args.Lines = new[]
+            {
+                new TransactionLine() {TaxRate = 18, TaxCode = "A", LineTotal = 80m},
+                new TransactionLine() {TaxRate = 12, TaxCode = "A", LineTotal = 300m},
+                new TransactionLine() {TaxRate = 1, TaxCode = "B", LineTotal = 170m},
+            };
+            args.TaxMethod = TaxMethods.ExtractTax;
+            var res = c.Calculate(args);
+            Assert.IsFalse(res.Success);
+            Assert.IsNotNull(res.Exception);
+        }
     }
 }

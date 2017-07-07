@@ -57,13 +57,13 @@
     <Compile Include="TransactionTaxCalculator_Tests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\TransactionTaxCalculator\TransactionTaxCalculator.csproj">
       <Project>{aed709db-1479-4cc1-ba37-0842da4bc3c8}</Project>
       <Name>TransactionTaxCalculator</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
