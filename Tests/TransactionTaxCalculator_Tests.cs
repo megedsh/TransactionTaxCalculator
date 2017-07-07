@@ -41,10 +41,10 @@ namespace TransactionTaxCalculator_Tests
             Assert.AreEqual(res.TotalTransactionAfterDiscountWithoutTax, expectedTotalincludingTax - expectedTotalTax);
             Assert.AreEqual(res.TotalTransactionBeforeDiscountWithTax, expectedTotalincludingTax);
             Assert.AreEqual(res.TotalTransactionAfterDiscountWithTax, expectedTotalincludingTax);
-            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Count, 1);
-            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode[taxCode18].TotalTax, expectedTotalTax);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Count, 1);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate[taxRate].TotalTax, expectedTotalTax);
+            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Count(), 1);
+            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.First(g=>g.TaxCode==taxCode18).TotalTax, expectedTotalTax);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Count(), 1);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.First(g => g.TaxRate == taxRate).TotalTax, expectedTotalTax);
 
 
             args.TaxMethod = TaxMethods.AddTax;
@@ -57,10 +57,10 @@ namespace TransactionTaxCalculator_Tests
             Assert.AreEqual(res2.TotalTransactionAfterDiscountWithoutTax, expectedTotalincludingTax_addTaxMethod - expectedTotalTax_addTax);
             Assert.AreEqual(res2.TotalTransactionBeforeDiscountWithTax, expectedTotalincludingTax_addTaxMethod);
             Assert.AreEqual(res2.TotalTransactionAfterDiscountWithTax, expectedTotalincludingTax_addTaxMethod);
-            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Count, 1);
-            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode[taxCode18].TotalTax, expectedTotalTax_addTax);
-            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Count, 1);
-            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate[taxRate].TotalTax, expectedTotalTax_addTax);
+            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Count(), 1);
+            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.First(g => g.TaxCode == taxCode18).TotalTax, expectedTotalTax_addTax);
+            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Count(), 1);
+            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.First(g => g.TaxRate == taxRate).TotalTax, expectedTotalTax_addTax);
         }
 
         [TestMethod]
@@ -85,20 +85,20 @@ namespace TransactionTaxCalculator_Tests
 
             Assert.AreEqual(res.TotalPositiveIncludingTax, expectedTotalincludingTax);
             Assert.AreEqual(res.TotalTax, expectedTotalTax);
-            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Count, 2);
-            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Values.Sum(x => x.TotalTax), expectedTotalTax);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Count, 1);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Values.Sum(x => x.TotalTax), expectedTotalTax);
+            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Count(), 2);
+            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Sum(x => x.TotalTax), expectedTotalTax);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Count(), 1);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Sum(x => x.TotalTax), expectedTotalTax);
 
             args.TaxMethod = TaxMethods.AddTax;
             var res2 = c.Calculate(args);
 
             Assert.AreEqual(res2.TotalPositiveIncludingTax, expectedTotalincludingTax_addTaxMethod);
             Assert.AreEqual(res2.TotalTax, expectedTotalTax_addTax);
-            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Count, 2);
-            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Values.Sum(x => x.TotalTax), expectedTotalTax_addTax);
-            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Count, 1);
-            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Values.Sum(x => x.TotalTax), expectedTotalTax_addTax);
+            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Count(), 2);
+            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Sum(x => x.TotalTax), expectedTotalTax_addTax);
+            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Count(), 1);
+            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Sum(x => x.TotalTax), expectedTotalTax_addTax);
         }
 
         [TestMethod]
@@ -123,20 +123,20 @@ namespace TransactionTaxCalculator_Tests
 
             Assert.AreEqual(res.TotalPositiveIncludingTax, expectedTotalincludingTax);
             Assert.AreEqual(res.TotalTax, expectedTotalTax);
-            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Count, 2);
-            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Values.Sum(x => x.TotalTax), expectedTotalTax);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Count, 2);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Values.Sum(x => x.TotalTax), expectedTotalTax);
+            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Count(), 2);
+            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Sum(x => x.TotalTax), expectedTotalTax);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Count(), 2);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Sum(x => x.TotalTax), expectedTotalTax);
 
             args.TaxMethod = TaxMethods.AddTax;
             var res2 = c.Calculate(args);
 
             Assert.AreEqual(res2.TotalPositiveIncludingTax, expectedTotalincludingTax_addTaxMethod);
             Assert.AreEqual(res2.TotalTax, expectedTotalTax_addTax);
-            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Count, 2);
-            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Values.Sum(x => x.TotalTax), expectedTotalTax_addTax);
-            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Count, 2);
-            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Values.Sum(x => x.TotalTax), expectedTotalTax_addTax);
+            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Count(), 2);
+            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Sum(x => x.TotalTax), expectedTotalTax_addTax);
+            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Count(), 2);
+            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Sum(x => x.TotalTax), expectedTotalTax_addTax);
         }
 
         [TestMethod]
@@ -174,10 +174,10 @@ namespace TransactionTaxCalculator_Tests
             Assert.AreEqual(res.TotalTransactionAfterDiscountWithoutTax, expectedTotalincludingTax - expectedTotalTax);
             Assert.AreEqual(res.TotalTransactionBeforeDiscountWithTax, expectedTotalincludingTax);
             Assert.AreEqual(res.TotalTransactionAfterDiscountWithTax, expectedTotalincludingTax);
-            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Count, 1);
-            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode[taxCode].TotalTax, expectedTotalTax);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Count, 1);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate[taxRate].TotalTax, expectedTotalTax);
+            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Count(), 1);
+            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.First(g => g.TaxCode == taxCode).TotalTax, expectedTotalTax);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Count(), 1);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.First(g => g.TaxRate == taxRate).TotalTax, expectedTotalTax);
 
             args.TaxMethod = TaxMethods.AddTax;
             var res2 = c.Calculate(args);
@@ -190,10 +190,10 @@ namespace TransactionTaxCalculator_Tests
             Assert.AreEqual(res2.TotalTransactionAfterDiscountWithoutTax, expectedTotalincludingTax_addTaxMethod - expectedTotalTax_addTax);
             Assert.AreEqual(res2.TotalTransactionBeforeDiscountWithTax, expectedTotalincludingTax_addTaxMethod);
             Assert.AreEqual(res2.TotalTransactionAfterDiscountWithTax, expectedTotalincludingTax_addTaxMethod);
-            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Count, 1);
-            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode[taxCode].TotalTax, expectedTotalTax_addTax);
-            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Count, 1);
-            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate[taxRate].TotalTax, expectedTotalTax_addTax);
+            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Count(), 1);
+            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.First(g => g.TaxCode == taxCode).TotalTax, expectedTotalTax_addTax);
+            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Count(), 1);
+            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.First(g => g.TaxRate == taxRate).TotalTax, expectedTotalTax_addTax);
         }
 
         [TestMethod]
@@ -230,10 +230,10 @@ namespace TransactionTaxCalculator_Tests
             Assert.AreEqual(res.TotalTransactionAfterDiscountWithoutTax, expectedTotalincludingTax - expectedTotalTax);
             Assert.AreEqual(res.TotalTransactionBeforeDiscountWithTax, expectedTotalincludingTax);
             Assert.AreEqual(res.TotalTransactionAfterDiscountWithTax, expectedTotalincludingTax);
-            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Count, 2);
-            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Values.Sum(x => x.TotalTax), expectedTotalTax);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Count, 2);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Values.Sum(x => x.TotalTax), expectedTotalTax);
+            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Count(), 2);
+            Assert.AreEqual(res.TaxCodeGroups.TaxGroupedByTaxCode.Sum(x => x.TotalTax), expectedTotalTax);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Count(), 2);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.Sum(x => x.TotalTax), expectedTotalTax);
 
             args.TaxMethod = TaxMethods.AddTax;
             var res2 = c.Calculate(args);
@@ -246,10 +246,10 @@ namespace TransactionTaxCalculator_Tests
             Assert.AreEqual(res2.TotalTransactionAfterDiscountWithoutTax, expectedTotalincludingTax_addTaxMethod - expectedTotalTax_addTax);
             Assert.AreEqual(res2.TotalTransactionBeforeDiscountWithTax, expectedTotalincludingTax_addTaxMethod);
             Assert.AreEqual(res2.TotalTransactionAfterDiscountWithTax, expectedTotalincludingTax_addTaxMethod);
-            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Count, 2);
-            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Values.Sum(x => x.TotalTax), expectedTotalTax_addTax);
-            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Count, 2);
-            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Values.Sum(x => x.TotalTax), expectedTotalTax_addTax);
+            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Count(), 2);
+            Assert.AreEqual(res2.TaxCodeGroups.TaxGroupedByTaxCode.Sum(x => x.TotalTax), expectedTotalTax_addTax);
+            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Count(), 2);
+            Assert.AreEqual(res2.TaxRateGroups.TaxGroupedByTaxRate.Sum(x => x.TotalTax), expectedTotalTax_addTax);
         }
 
         [TestMethod]
@@ -324,12 +324,12 @@ namespace TransactionTaxCalculator_Tests
             args.GlobalDiscountAmount = 31.82m;
             var res = c.Calculate(args);
             Assert.IsTrue(res.TaxRateGroups.TaxGroupedByTaxRate.Any());
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate[0].TotalTax, 0);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate[1].TotalTax, 12.06m);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate[5].TotalTax, 47.65m);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate[10].TotalTax, 16.38m);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate[20].TotalTax, 48.46m);
-            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate[25].TotalTax, 1.88m);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.First(g => g.TaxRate == 0).TotalTax, 0);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.First(g => g.TaxRate == 1).TotalTax, 12.06m);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.First(g => g.TaxRate == 5).TotalTax, 47.65m);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.First(g => g.TaxRate == 10).TotalTax, 16.38m);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.First(g => g.TaxRate == 20).TotalTax, 48.46m);
+            Assert.AreEqual(res.TaxRateGroups.TaxGroupedByTaxRate.First(g => g.TaxRate == 25).TotalTax, 1.88m);
 
             Assert.AreEqual(res.SumLinesWithTax, 2731.82m);
             Assert.AreEqual(res.TotalTax, 126.43m);
