@@ -2,8 +2,15 @@ namespace TransactionTaxCalculator
 {
     public class TaxCodeGroup
     {
-        public string TaxCode;
-        public decimal TaxRate;
+        public TaxCodeGroup(string taxCode, decimal taxRate)
+        {
+            TaxCode = taxCode;
+            TaxRate = taxRate;
+        }
+
+        public string TaxCode { get; private set; }
+        public decimal TaxRate { get; private set; }
+
         public decimal TotalWithTax;
         public decimal TotalTax;
         public decimal TotalWithoutTax;

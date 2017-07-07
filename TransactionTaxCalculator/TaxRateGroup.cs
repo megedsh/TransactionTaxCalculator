@@ -2,7 +2,11 @@ namespace TransactionTaxCalculator
 {
     public class TaxRateGroup
     {
-        public decimal TaxRate;
+        public decimal TaxRate { get; private set; }
+        public TaxRateGroup(decimal taxRate)
+        {
+            TaxRate = taxRate;
+        }
         public decimal TotalWithTax;
         public decimal TotalTax;
         public decimal TotalWithoutTax;
