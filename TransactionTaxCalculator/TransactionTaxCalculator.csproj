@@ -43,12 +43,16 @@
   <ItemGroup>
     <Compile Include="CalculateTransactionResult.cs" />
     <Compile Include="CalculateTaxHelper.cs" />
+    <Compile Include="TaxCalculationStratagies\CalculationStratagyResult.cs" />
+    <Compile Include="TaxCalculationStratagies\ITaxCalculationStratagy.cs" />
+    <Compile Include="TaxCalculationStratagies\S1\RemainderHelper.cs" />
+    <Compile Include="TaxCalculationStratagies\S1\S1_Stratagy.cs" />
     <Compile Include="TransactionTaxCalculator.cs" />
     <Compile Include="ITransactionLine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TaxCodeGroup.cs" />
     <Compile Include="TaxCodeGroups.cs" />
-    <Compile Include="TaxGroupForCalculations.cs" />
+    <Compile Include="TaxCalculationStratagies\S1\TaxGroupForCalculations.cs" />
     <Compile Include="TaxRateGroup.cs" />
     <Compile Include="TaxRateGroups.cs" />
     <Compile Include="TransactionBrutoTotals.cs" />

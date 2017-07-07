@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TransactionTaxCalculator
 {
-    internal class CalculateTaxHelper
+    public class CalculateTaxHelper
     {
         public CalculateTaxHelper(IEnumerable<ITransactionLine> transLines, decimal discountAmount, decimal discountPct, TaxMethods taxMethod)
         {
@@ -15,42 +15,24 @@ namespace TransactionTaxCalculator
             DiscountPCT = discountPct;
             TaxMethod = taxMethod;
             BrutoTotals = calculateBruto();
-            setDiscountAmount();
-        }
-
-        private void setDiscountAmount()
-        {
-            if (DiscountAmount == 0 && DiscountPCT != 0)
-            {
-                decimal bruto = TaxMethod == TaxMethods.AddTax
-                    ? BrutoTotals.TotalAmountWithoutTax
-                    : BrutoTotals.TotalAmountWithTax;
-                DiscountAmount = Math.Round((DiscountPCT / 100) * bruto, 2);
-            }
         }
 
         public TransactionBrutoTotals BrutoTotals { get; private set; }
         public TaxMethods TaxMethod { get; }
 
         public IEnumerable<ITransactionLine> TransLines;
-        public Dictionary<string, TaxGroupForCalculations> TaxGroupsForCalculations = new Dictionary<string, TaxGroupForCalculations>();
 
-        public Dictionary<decimal, TaxRateGroup> PositiveTaxGroupedByTaxRate = new Dictionary<decimal, TaxRateGroup>();
-        public Dictionary<decimal, TaxRateGroup> NegativeTaxGroupedByTaxRate = new Dictionary<decimal, TaxRateGroup>();
+        public IEnumerable<TaxRateGroup> PositiveTaxGroupedByTaxRate { get; set; }
+        public IEnumerable<TaxRateGroup> NegativeTaxGroupedByTaxRate { get; set; }
 
-        public Dictionary<string, TaxCodeGroup> PositiveTaxGroupedByTaxCode = new Dictionary<string, TaxCodeGroup>();
-        public Dictionary<string, TaxCodeGroup> NegativeTaxGroupedByTaxCode = new Dictionary<string, TaxCodeGroup>();
+        public IEnumerable<TaxCodeGroup> PositiveTaxGroupedByTaxCode { get; set; }
+        public IEnumerable<TaxCodeGroup> NegativeTaxGroupedByTaxCode { get; set; }
 
         public Dictionary<decimal, TaxRateGroup> TaxGroupedByTaxRate = new Dictionary<decimal, TaxRateGroup>();
         public Dictionary<string, TaxCodeGroup> TaxGroupedByTaxCode = new Dictionary<string, TaxCodeGroup>();
 
         public decimal DiscountAmount;
         public decimal DiscountPCT;
-        public decimal RemainderSumPositive;
-        public decimal RemainderSumNegative;
-        public bool PositiveValuesExist;
-        public bool NegativeValuesExist;
-
         private TransactionBrutoTotals calculateBruto()
         {
             TransactionBrutoTotals res = new TransactionBrutoTotals();

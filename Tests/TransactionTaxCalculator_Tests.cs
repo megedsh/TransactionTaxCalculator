@@ -5,16 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TransactionTaxCalculator;
+using TransactionTaxCalculator.TaxCalculationStratagies.S1;
 
 namespace TransactionTaxCalculator_Tests
 {
     [TestClass]
     public class CommonTransactionSumCalculator_Tests
     {
+
         [TestMethod]
         public void SimpleTest1()
         {
-            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator(S1_Stratagy.Default);
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             string taxCode18 = "18";
             decimal taxRate = 18;
@@ -66,7 +68,7 @@ namespace TransactionTaxCalculator_Tests
         [TestMethod]
         public void TwoTaxCodesOneTaxRateTest()
         {
-            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator(S1_Stratagy.Default);
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             args.Lines = new TransactionLine[]
             {
@@ -104,7 +106,7 @@ namespace TransactionTaxCalculator_Tests
         [TestMethod]
         public void TwoTaxCodesTwoTaxRateTest()
         {
-            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator(S1_Stratagy.Default);
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             args.Lines = new TransactionLine[]
             {
@@ -142,7 +144,7 @@ namespace TransactionTaxCalculator_Tests
         [TestMethod]
         public void NegativeSimple()
         {
-            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator(S1_Stratagy.Default);
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             string taxCode = "18";
             decimal taxRate = 18;
@@ -199,7 +201,7 @@ namespace TransactionTaxCalculator_Tests
         [TestMethod]
         public void NegativeAndPositive()
         {
-            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator(S1_Stratagy.Default);
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             args.Lines = new[]
             {
@@ -255,7 +257,7 @@ namespace TransactionTaxCalculator_Tests
         [TestMethod]
         public void Complex1()
         {
-            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator(S1_Stratagy.Default);
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             args.Lines = new[]
             {
@@ -342,7 +344,7 @@ namespace TransactionTaxCalculator_Tests
         [TestMethod]
         public void Complex2()
         {
-            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator(S1_Stratagy.Default);
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             args.Lines = new[]
             {
@@ -362,7 +364,7 @@ namespace TransactionTaxCalculator_Tests
         [TestMethod]
         public void TestMultipleTaxCodeValidationError()
         {
-            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator();
+            TransactionTaxCalculator.TransactionTaxCalculator c = new TransactionTaxCalculator.TransactionTaxCalculator(S1_Stratagy.Default);
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             args.Lines = new[]
             {
