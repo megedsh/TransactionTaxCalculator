@@ -1,12 +1,13 @@
 # TransactionTaxCalculator
+
 Calculating financial transaction sum and tax (VAT)
 
-This started as a project for lerning Unit Tests, then to lern the Stratagy Pattern, and finly lerning some git/github source control.
+This started as a project for learning Unit Tests, then to learn the Strategy Pattern, and finely learning some git/github source control.
 
-The code functionality is ver simple, 
+The code functionality is very simple
 Input:
-- Enumerble transaction lines , which contains, Id, Tax rate, Tax code, Qtuantity, and line total.
-- Global discounts (ammount or percentage, not both)
+- Enumerable transaction lines , which contains, Id, Tax rate, Tax code, Quantity, and line total.
+- Global discounts (amount or percentage, not both)
 
 Output:
 An object containing
@@ -14,10 +15,8 @@ An object containing
 - Transaction tax (VAT) split into groups and rates
 - All totals are with and without the global discount.
 
-Supports
- - Multiple tax groups and rates
- - Add or extract tax method
- - Global discount percent or global discount amount
- - Positive and negative quantity of items in the same transaction 
- 
- 
+Supports:
+- Multiple tax groups and rates
+- Add or extract tax method
+- Global discount percent or global discount amount
+- Positive and negative quantity of items in the same transaction
