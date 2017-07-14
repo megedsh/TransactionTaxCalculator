@@ -11,6 +11,7 @@ Input:
 - Global discounts (amount or percentage, not both)
 
 Output:
+
 An object containing
 - Transaction Totals (with and without tax)
 - Transaction tax (VAT) split into groups and rates
