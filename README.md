@@ -6,7 +6,7 @@ This started as a project for learning Unit Tests, then to learn the Strategy Pa
 
 The code functionality is very simple
 Input:
-- Enumerable transaction lines , which contains, Id, Tax rate, Tax code, Quantity, and line total.
+- Enumerable transaction lines , which contains: Id, Tax rate, Tax code, Quantity, and line total.
 - Global discounts (amount or percentage, not both)
 
 Output:
