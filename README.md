@@ -5,6 +5,7 @@ Calculating financial transaction sum and tax (VAT)
 This started as a project for learning Unit Tests, then to learn the Strategy Pattern, and finely learning some git/github source control.
 
 The code functionality is very simple
+
 Input:
 - Enumerable transaction lines , which contains: Id, Tax rate, Tax code, Quantity, and line total.
 - Global discounts (amount or percentage, not both)
