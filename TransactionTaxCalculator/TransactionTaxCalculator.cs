@@ -21,7 +21,7 @@ namespace TransactionTaxCalculator
                 ValidateArguments(args);
                 CalculateTaxHelper helper = new CalculateTaxHelper(args.Lines, args.GlobalDiscountAmount, args.GlobalDiscountPct,
                     args.TaxMethod);
-                CalculateTransactionResult res = ProcessDocument(helper);
+                CalculateTransactionResult res = processDocument(helper);
                 res.Success = true;
                 return res;
             }
@@ -31,7 +31,7 @@ namespace TransactionTaxCalculator
             }
         }
 
-        private CalculateTransactionResult ProcessDocument(CalculateTaxHelper helper)
+        private CalculateTransactionResult processDocument(CalculateTaxHelper helper)
         {
             CalculateTransactionResult firstCalc = calculateResult(helper);
 
