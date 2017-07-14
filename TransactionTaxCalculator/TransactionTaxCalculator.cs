@@ -19,8 +19,7 @@ namespace TransactionTaxCalculator
             try
             {
                 ValidateArguments(args);
-                CalculateTaxHelper helper = new CalculateTaxHelper(args.Lines, args.GlobalDiscountAmount, args.GlobalDiscountPct,
-                    args.TaxMethod);
+                CommonTaxHelper helper = new CommonTaxHelper(args.Lines, args.GlobalDiscountAmount, args.GlobalDiscountPct, m_calculationStratagy.TaxMethod);
                 CalculateTransactionResult res = processDocument(helper);
                 res.Success = true;
                 return res;
@@ -31,7 +30,7 @@ namespace TransactionTaxCalculator
             }
         }
 
-        private CalculateTransactionResult processDocument(CalculateTaxHelper helper)
+        private CalculateTransactionResult processDocument(CommonTaxHelper helper)
         {
             CalculateTransactionResult firstCalc = calculateResult(helper);
 
@@ -48,19 +47,18 @@ namespace TransactionTaxCalculator
             }
 
             // Calculate again but without the discount
-            CalculateTaxHelper helper2 = new CalculateTaxHelper(helper.TransLines, 0, 0, helper.TaxMethod);
+            CommonTaxHelper helper2 = new CommonTaxHelper(helper.TransLines, 0, 0, helper.TaxMethod);
             CalculateTransactionResult secondCalc = calculateResult(helper2);
             firstCalc.TotalTransactionBeforeDiscountWithoutTax =
                 secondCalc.TotalTransactionAfterDiscountWithTax - secondCalc.TotalTax;
             firstCalc.TotalTaxWithoutDiscount = secondCalc.TotalTax;
             firstCalc.TaxRateGroups.TaxGroupedByTaxRateBeforeDiscount = secondCalc.TaxRateGroups.TaxGroupedByTaxRate;
             firstCalc.TaxCodeGroups.TaxGroupedByTaxCodeBeforeDiscount = secondCalc.TaxCodeGroups.TaxGroupedByTaxCode;
-            firstCalc.TotalDiscountWithoutTax = firstCalc.TotalTransactionBeforeDiscountWithoutTax -
-                                                firstCalc.TotalTransactionAfterDiscountWithoutTax;
+            firstCalc.TotalDiscountWithoutTax = firstCalc.TotalTransactionBeforeDiscountWithoutTax - firstCalc.TotalTransactionAfterDiscountWithoutTax;
             return firstCalc;
         }
 
-        private CalculateTransactionResult calculateResult(CalculateTaxHelper helper)
+        private CalculateTransactionResult calculateResult(CommonTaxHelper helper)
         {
             CalculationStratagyResult calcRes = m_calculationStratagy.Calculate(helper);
 
@@ -75,7 +73,7 @@ namespace TransactionTaxCalculator
             return CreateResult(helper);
         }
 
-        private CalculateTransactionResult CreateResult(CalculateTaxHelper helper)
+        private CalculateTransactionResult CreateResult(CommonTaxHelper helper)
         {
             CalculateTransactionResult res = new CalculateTransactionResult();
 
@@ -85,10 +83,8 @@ namespace TransactionTaxCalculator
             res.TaxCodeGroups.NegativeTaxGroupedByTaxCode = helper.NegativeTaxGroupedByTaxCode;
             res.TaxRateGroups.PositiveTaxGroupedByTaxRate = helper.PositiveTaxGroupedByTaxRate;
             res.TaxRateGroups.NegativeTaxGroupedByTaxRate = helper.NegativeTaxGroupedByTaxRate;
-            res.TaxRateGroups.TaxGroupedByTaxRate = helper.TaxGroupedByTaxRate.Select(pair => pair.Value)
-                .OrderBy(trg => trg.TaxRate);
-            res.TaxCodeGroups.TaxGroupedByTaxCode = helper.TaxGroupedByTaxCode.Select(pair => pair.Value)
-                .OrderBy(tcg => tcg.TaxCode);
+            res.TaxRateGroups.TaxGroupedByTaxRate = helper.TaxGroupedByTaxRate.Select(pair => pair.Value).OrderBy(trg => trg.TaxRate);
+            res.TaxCodeGroups.TaxGroupedByTaxCode = helper.TaxGroupedByTaxCode.Select(pair => pair.Value).OrderBy(tcg => tcg.TaxCode);
             res.TotalPositiveTax = helper.PositiveTaxGroupedByTaxRate.Sum(x => x.TotalTax);
             res.TotalNegativeTax = helper.NegativeTaxGroupedByTaxRate.Sum(x => x.TotalTax);
             res.TotalTax = res.TotalPositiveTax - res.TotalNegativeTax;
@@ -97,16 +93,14 @@ namespace TransactionTaxCalculator
             res.SumLinesWithTax = helper.BrutoTotals.TotalAmountWithTax;
             res.SumLinesWithoutTax = helper.BrutoTotals.TotalAmountWithoutTax;
             res.TotalTransactionBeforeDiscountWithTax = res.SumLinesWithTax;
-            res.TotalDiscountWithTax = res.SumLinesWithTax -
-                                       (res.TotalPositiveIncludingTax - res.TotalNegativeIncludingTax);
-            res.TotalDiscountWithoutTax = res.TotalTransactionBeforeDiscountWithoutTax -
-                                          res.TotalTransactionAfterDiscountWithoutTax;
+            res.TotalDiscountWithTax = res.SumLinesWithTax - (res.TotalPositiveIncludingTax - res.TotalNegativeIncludingTax);
+            res.TotalDiscountWithoutTax = res.TotalTransactionBeforeDiscountWithoutTax - res.TotalTransactionAfterDiscountWithoutTax;
             res.TotalTransactionAfterDiscountWithTax = res.TotalPositiveIncludingTax - res.TotalNegativeIncludingTax;
             res.TotalTransactionAfterDiscountWithoutTax = helper.TaxGroupedByTaxRate.Values.Sum(x => x.TotalWithoutTax);
             return res;
         }
 
-        private static void groupPositiveAndNegativeRatesGroups(CalculateTaxHelper helper)
+        private static void groupPositiveAndNegativeRatesGroups(CommonTaxHelper helper)
         {
             foreach (TaxRateGroup rateGroup in helper.PositiveTaxGroupedByTaxRate)
             {
@@ -119,7 +113,7 @@ namespace TransactionTaxCalculator
             }
         }
 
-        private static void groupPositiveAndNegativeCodeGroups(CalculateTaxHelper helper)
+        private static void groupPositiveAndNegativeCodeGroups(CommonTaxHelper helper)
         {
             foreach (TaxCodeGroup codeGroup in helper.PositiveTaxGroupedByTaxCode)
             {
@@ -161,7 +155,7 @@ namespace TransactionTaxCalculator
 
         private void ValidateArguments(TransactionCalculatorArgs args)
         {
-            if (args.TaxMethod == TaxMethods.NotSet)
+            if (m_calculationStratagy.TaxMethod == TaxMethods.NotSet)
             {
                 throw new Exception("Tax Method not set properly");
             }
@@ -183,11 +177,5 @@ namespace TransactionTaxCalculator
         }
     }
 
-    public enum TaxMethods
-    {
-        NotSet = 0,
-        AddTax = 1,
-        ExtractTax = 2,
-        NoTax = 3
-    }
+
 }

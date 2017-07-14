@@ -8,6 +8,5 @@ namespace TransactionTaxCalculator
         public IEnumerable<ITransactionLine> Lines;
         public decimal GlobalDiscountPct;
         public decimal GlobalDiscountAmount;
-        public TaxMethods TaxMethod = TaxMethods.ExtractTax;
     }
 }

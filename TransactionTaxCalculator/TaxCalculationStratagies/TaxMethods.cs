@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace TransactionTaxCalculator.TaxCalculationStratagies
 {
-    public interface ITaxCalculationStratagy
+    public enum TaxMethods
     {
-        CalculationStratagyResult Calculate(CommonTaxHelper commonTaxHelper);
-        TaxMethods TaxMethod { get; }
+        NotSet = 0,
+        AddTax = 1,
+        ExtractTax = 2
     }
 }

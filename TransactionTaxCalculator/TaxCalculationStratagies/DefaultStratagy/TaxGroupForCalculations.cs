@@ -1,4 +1,4 @@
-﻿namespace TransactionTaxCalculator
+﻿namespace TransactionTaxCalculator.TaxCalculationStratagies.DefaultStratagy
 {
     internal class TaxGroupForCalculations
     {

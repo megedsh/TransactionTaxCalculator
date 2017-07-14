@@ -6,8 +6,8 @@
     <ProjectGuid>{CF98C437-8D49-4C38-A956-FC4E4966F19E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ENV.Verifone.Extensions.Tests</RootNamespace>
-    <AssemblyName>ENV.Verifone.Extensions.Tests</AssemblyName>
+    <RootNamespace>TransactionTaxCalculator_Tests</RootNamespace>
+    <AssemblyName>TransactionTaxCalculator_Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -54,7 +54,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="TransactionTaxCalculator_Tests.cs" />
+    <Compile Include="CommonTests.cs" />
+    <Compile Include="DefaultStratagyTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

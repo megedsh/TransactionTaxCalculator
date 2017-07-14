@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TransactionTaxCalculator.TaxCalculationStratagies;
 
 namespace TransactionTaxCalculator
 {
-    public class CalculateTaxHelper
+    public class CommonTaxHelper
     {
-        public CalculateTaxHelper(IEnumerable<ITransactionLine> transLines, decimal discountAmount, decimal discountPct, TaxMethods taxMethod)
+        public CommonTaxHelper(IEnumerable<ITransactionLine> transLines, decimal discountAmount, decimal discountPct, TaxMethods taxMethod)
         {
             TransLines = transLines;
             DiscountAmount = discountAmount;
