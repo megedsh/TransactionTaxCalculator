@@ -15,27 +15,20 @@ namespace TransactionTaxCalculator.TaxCalculationStratagies.DefaultStratagy
         public CalculationStratagyResult Calculate(CommonTaxHelper commonTaxHelper)
         {
             RemainderHelper remainderHelper = new RemainderHelper();
-            Dictionary<string, TaxGroupForCalculations> taxGroupsForCalculations =
-                createTaxGroupTable(commonTaxHelper.TransLines);
+            Dictionary<string, TaxGroupForCalculations> taxGroupsForCalculations = createTaxGroupTable(commonTaxHelper.TransLines);
             calcTaxForEachGroup(commonTaxHelper, remainderHelper, taxGroupsForCalculations);
 
             distributeRemainders(POSITIVE_SIGN, commonTaxHelper, remainderHelper, taxGroupsForCalculations.Values);
             distributeRemainders(NEGATIVE_SIGN, commonTaxHelper, remainderHelper, taxGroupsForCalculations.Values);
-            var positiveTaxGroupedByTaxRate =
-                GetGroupedByTaxRate(taxGroupsForCalculations.Values.Where(x => x.PositiveOrNegative == POSITIVE_SIGN));
-            var negativeTaxGroupedByTaxRate =
-                GetGroupedByTaxRate(taxGroupsForCalculations.Values.Where(x => x.PositiveOrNegative == NEGATIVE_SIGN));
-            var positiveTaxGroupedByTaxCode =
-                GetGroupedByTaxCode(taxGroupsForCalculations.Values.Where(x => x.PositiveOrNegative == POSITIVE_SIGN));
-            var negativeTaxGroupedByTaxCode =
-                GetGroupedByTaxCode(taxGroupsForCalculations.Values.Where(x => x.PositiveOrNegative == NEGATIVE_SIGN));
+            IEnumerable<TaxRateGroup> positiveTaxGroupedByTaxRate = getGroupedByTaxRate(taxGroupsForCalculations.Values.Where(x => x.PositiveOrNegative == POSITIVE_SIGN));
+            IEnumerable<TaxRateGroup> negativeTaxGroupedByTaxRate = getGroupedByTaxRate(taxGroupsForCalculations.Values.Where(x => x.PositiveOrNegative == NEGATIVE_SIGN));
+            IEnumerable<TaxCodeGroup> positiveTaxGroupedByTaxCode = getGroupedByTaxCode(taxGroupsForCalculations.Values.Where(x => x.PositiveOrNegative == POSITIVE_SIGN));
+            IEnumerable<TaxCodeGroup> negativeTaxGroupedByTaxCode = getGroupedByTaxCode(taxGroupsForCalculations.Values.Where(x => x.PositiveOrNegative == NEGATIVE_SIGN));
 
-            return new CalculationStratagyResult(positiveTaxGroupedByTaxRate, negativeTaxGroupedByTaxRate,
-                positiveTaxGroupedByTaxCode, negativeTaxGroupedByTaxCode);
+            return new CalculationStratagyResult(positiveTaxGroupedByTaxRate, negativeTaxGroupedByTaxRate, positiveTaxGroupedByTaxCode, negativeTaxGroupedByTaxCode);
         }
 
-        private IEnumerable<TaxCodeGroup> GetGroupedByTaxCode(
-            IEnumerable<TaxGroupForCalculations> taxGroupsForCalculations)
+        private IEnumerable<TaxCodeGroup> getGroupedByTaxCode(IEnumerable<TaxGroupForCalculations> taxGroupsForCalculations)
         {
             Dictionary<string, TaxCodeGroup> result = new Dictionary<string, TaxCodeGroup>();
             foreach (var group in taxGroupsForCalculations)
@@ -50,23 +43,20 @@ namespace TransactionTaxCalculator.TaxCalculationStratagies.DefaultStratagy
                 if (TaxMethod == TaxMethods.AddTax)
                 {
                     taxCodeGroup.TotalWithoutTax += group.TotalForGroupAfterDiscountAndRemainder;
-                    taxCodeGroup.TotalTax =
-                        Utils.GetSaleTaxDue(taxCodeGroup.TotalWithoutTax, taxCodeGroup.TaxRate, TaxMethod);
+                    taxCodeGroup.TotalTax = Utils.GetSaleTaxDue(taxCodeGroup.TotalWithoutTax, taxCodeGroup.TaxRate, TaxMethod);
                     taxCodeGroup.TotalWithTax = taxCodeGroup.TotalWithoutTax + taxCodeGroup.TotalTax;
                 }
                 else
                 {
                     taxCodeGroup.TotalWithTax += group.TotalForGroupAfterDiscountAndRemainder;
-                    taxCodeGroup.TotalTax =
-                        Utils.GetSaleTaxDue(taxCodeGroup.TotalWithTax, taxCodeGroup.TaxRate, TaxMethod);
+                    taxCodeGroup.TotalTax = Utils.GetSaleTaxDue(taxCodeGroup.TotalWithTax, taxCodeGroup.TaxRate, TaxMethod);
                     taxCodeGroup.TotalWithoutTax = taxCodeGroup.TotalWithTax - taxCodeGroup.TotalTax;
                 }
             }
             return result.Values;
         }
 
-        private IEnumerable<TaxRateGroup> GetGroupedByTaxRate(
-            IEnumerable<TaxGroupForCalculations> taxGroupsForCalculations)
+        private IEnumerable<TaxRateGroup> getGroupedByTaxRate(IEnumerable<TaxGroupForCalculations> taxGroupsForCalculations)
         {
             Dictionary<decimal, TaxRateGroup> result = new Dictionary<decimal, TaxRateGroup>();
             foreach (TaxGroupForCalculations group in taxGroupsForCalculations)
@@ -102,8 +92,7 @@ namespace TransactionTaxCalculator.TaxCalculationStratagies.DefaultStratagy
                 TaxGroupForCalculations c;
                 if (false == result.TryGetValue(groupCode, out c))
                 {
-                    result[groupCode] = c =
-                        new TaxGroupForCalculations(getSign(line.LineTotal), line.TaxCode, line.TaxRate);
+                    result[groupCode] = c = new TaxGroupForCalculations(getSign(line.LineTotal), line.TaxCode, line.TaxRate);
                 }
                 c.TotalForGroupBeforeDiscount += line.LineTotal;
             }
@@ -172,12 +161,10 @@ namespace TransactionTaxCalculator.TaxCalculationStratagies.DefaultStratagy
             return Math.Truncate(p * 100) / 100;
         }
 
-        private void distributeRemainders(short sign, CommonTaxHelper helper, RemainderHelper remainderHelper,
-            IEnumerable<TaxGroupForCalculations> taxGroupsForCalculations)
+        private void distributeRemainders(short sign, CommonTaxHelper helper, RemainderHelper remainderHelper, IEnumerable<TaxGroupForCalculations> taxGroupsForCalculations)
         {
             var vatGroups = taxGroupsForCalculations.Where(x => x.PositiveOrNegative == sign);
-            var sortedList = vatGroups.OrderByDescending(o => o.Remainder)
-                .ThenByDescending(o => o.TotalForGroupBeforeDiscount);
+            var sortedList = vatGroups.OrderByDescending(o => o.Remainder).ThenByDescending(o => o.TotalForGroupBeforeDiscount);
             int groupCounter = 0;
             decimal howManyDistributions = Math.Abs(sign == POSITIVE_SIGN
                                                ? remainderHelper.RemainderSumPositive
@@ -193,15 +180,11 @@ namespace TransactionTaxCalculator.TaxCalculationStratagies.DefaultStratagy
                 {
                     group.DistributedRemainder = 0.01m;
                 }
-                group.DiscountAmountForGroupWithRemainder =
-                    group.TruncatedDiscountAmountForGroup + group.DistributedRemainder;
-                group.TotalForGroupAfterDiscountAndRemainder =
-                    group.TotalForGroupBeforeDiscount - group.DiscountAmountForGroupWithRemainder;
+                group.DiscountAmountForGroupWithRemainder = group.TruncatedDiscountAmountForGroup + group.DistributedRemainder;
+                group.TotalForGroupAfterDiscountAndRemainder = group.TotalForGroupBeforeDiscount - group.DiscountAmountForGroupWithRemainder;
 
-                group.TotalVATAfterDiscount = Utils.GetSaleTaxDue(group.TotalForGroupAfterDiscountAndRemainder,
-                    group.TaxRate, TaxMethod);
-                group.TotalVATBeforeDiscount =
-                    Utils.GetSaleTaxDue(group.TotalForGroupBeforeDiscount, group.TaxRate, TaxMethod);
+                group.TotalVATAfterDiscount = Utils.GetSaleTaxDue(group.TotalForGroupAfterDiscountAndRemainder, group.TaxRate, TaxMethod);
+                group.TotalVATBeforeDiscount = Utils.GetSaleTaxDue(group.TotalForGroupBeforeDiscount, group.TaxRate, TaxMethod);
             }
         }
 
