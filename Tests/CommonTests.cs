@@ -15,6 +15,7 @@ namespace TransactionTaxCalculator_Tests
         [TestMethod]
         public void TestMultipleTaxCodeValidationError()
         {
+            int x = 1;
 
             TransactionCalculatorArgs args = new TransactionCalculatorArgs();
             args.Lines = new[]
